@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CustomColorPicker from './CustomColorPicker';
-import { Button, TextField, Paper, Grid, Typography, Container, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Divider } from '@mui/material';
+import { Button, TextField, Paper, Typography, Container, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Divider } from '@mui/material';
 import { colord } from "colord";
 
 const ColorPicker = () => {
