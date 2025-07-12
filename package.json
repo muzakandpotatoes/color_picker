@@ -1,7 +1,7 @@
 {
-  "homepage": "https://yourusername.github.io/color_picker",
   "name": "color_picker",
   "version": "0.1.0",
+  "homepage": "https://muzakandpotatoes.github.io/color_picker",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.14.0",
