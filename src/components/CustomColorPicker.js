@@ -1,37 +1,16 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { colord } from "colord";
 
-const CustomColorPicker = ({ color, onChange, slider, colorMode = 'hsl' }) => {
+const ColorPickerSquare = ({ slider, color, onChange, colorMode }) => {
   const hslColor = useMemo(() => colord(color).toHsl(), [color]);
   const hsvColor = useMemo(() => colord(color).toHsv(), [color]);
-  const currentColor = colorMode === 'hsl' ? hslColor : hsvColor;
   const squareRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-
-  const onHueChange = useCallback((newHue) => {
-    const currentColor = colorMode === 'hsl' ? hslColor : hsvColor;
-    const newColor = { ...currentColor, h: newHue };
-    onChange(colord(newColor).toHex());
-  }, [hslColor, hsvColor, onChange, colorMode]);
-
-  const onSaturationChange = useCallback((newSaturation) => {
-    const currentColor = colorMode === 'hsl' ? hslColor : hsvColor;
-    const newColor = { ...currentColor, s: newSaturation };
-    onChange(colord(newColor).toHex());
-  }, [hslColor, hsvColor, onChange, colorMode]);
-
-  const onThirdAxisChange = useCallback((newValue) => {
-    const currentColor = colorMode === 'hsl' ? hslColor : hsvColor;
-    const thirdAxis = colorMode === 'hsl' ? 'l' : 'v';
-    const newColor = { ...currentColor, [thirdAxis]: newValue };
-    onChange(colord(newColor).toHex());
-  }, [hslColor, hsvColor, onChange, colorMode]);
 
   const updateColor = useCallback((e) => {
     if (!squareRef.current) return;
     const rect = squareRef.current.getBoundingClientRect();
     
-    // Calculate ratios using full dimensions for smooth movement
     const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
     const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
     
@@ -160,85 +139,122 @@ const CustomColorPicker = ({ color, onChange, slider, colorMode = 'hsl' }) => {
   }, [slider, hslColor, hsvColor, colorMode]);
 
   return (
-    <div>
+    <div
+      ref={squareRef}
+      style={{
+        width: '100%',
+        height: '125px',
+        position: 'relative',
+        cursor: 'crosshair',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        ...squareStyles,
+      }}
+      onMouseDown={handleMouseDown}
+    >
+      {overlays}
       <div
-        ref={squareRef}
-        style={{
-          width: '100%',
-          height: '200px',
-          position: 'relative',
-          cursor: 'crosshair',
+        style={markerStyle}
+      />
+    </div>
+  );
+};
+
+const CustomColorPicker = ({ color, onChange, colorMode = 'hsl' }) => {
+  const hslColor = useMemo(() => colord(color).toHsl(), [color]);
+  const hsvColor = useMemo(() => colord(color).toHsv(), [color]);
+  const currentColor = colorMode === 'hsl' ? hslColor : hsvColor;
+
+  const onHueChange = useCallback((newHue) => {
+    const currentColor = colorMode === 'hsl' ? hslColor : hsvColor;
+    const newColor = { ...currentColor, h: newHue };
+    onChange(colord(newColor).toHex());
+  }, [hslColor, hsvColor, onChange, colorMode]);
+
+  const onSaturationChange = useCallback((newSaturation) => {
+    const currentColor = colorMode === 'hsl' ? hslColor : hsvColor;
+    const newColor = { ...currentColor, s: newSaturation };
+    onChange(colord(newColor).toHex());
+  }, [hslColor, hsvColor, onChange, colorMode]);
+
+  const onThirdAxisChange = useCallback((newValue) => {
+    const currentColor = colorMode === 'hsl' ? hslColor : hsvColor;
+    const thirdAxis = colorMode === 'hsl' ? 'l' : 'v';
+    const newColor = { ...currentColor, [thirdAxis]: newValue };
+    onChange(colord(newColor).toHex());
+  }, [hslColor, hsvColor, onChange, colorMode]);
+
+  const thirdAxis = colorMode === 'hsl' ? 'l' : 'v';
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+        <ColorPickerSquare slider="h" color={color} onChange={onChange} colorMode={colorMode} />
+        <ColorPickerSquare slider="s" color={color} onChange={onChange} colorMode={colorMode} />
+        <ColorPickerSquare slider={thirdAxis} color={color} onChange={onChange} colorMode={colorMode} />
+        <div style={{ 
+          width: '100%', 
+          height: '125px', 
+          backgroundColor: color, 
+          border: '1px solid #ddd', 
           borderRadius: '8px',
-          overflow: 'hidden',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          ...squareStyles,
-        }}
-        onMouseDown={handleMouseDown}
-      >
-        {overlays}
-        <div
-          style={markerStyle}
-        />
+        }} />
       </div>
-      <div style={{ marginTop: '1rem' }}>
-        {slider === 'h' && (
-          <input
-            type="range"
-            min="0"
-            max="360"
-            value={currentColor.h}
-            onChange={(e) => onHueChange(Number(e.target.value))}
-            style={{
-              width: '100%',
-              height: '8px',
-              background: 'linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)',
-              borderRadius: '4px',
-              outline: 'none',
-              appearance: 'none',
-              WebkitAppearance: 'none'
-            }}
-          />
-        )}
-        {slider === 's' && (
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={currentColor.s}
-            onChange={(e) => onSaturationChange(Number(e.target.value))}
-            style={{
-              width: '100%',
-              height: '8px',
-              background: colorMode === 'hsl' 
-                ? `linear-gradient(to right, hsl(${hslColor.h}, 0%, 50%), hsl(${hslColor.h}, 100%, 50%))`
-                : `linear-gradient(to right, white, ${colord({h: hsvColor.h, s: 100, v: hsvColor.v}).toHex()})`,
-              borderRadius: '4px',
-              outline: 'none',
-              appearance: 'none',
-              WebkitAppearance: 'none'
-            }}
-          />
-        )}
-        {(slider === 'l' || slider === 'v') && (
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={colorMode === 'hsl' ? hslColor.l : hsvColor.v}
-            onChange={(e) => onThirdAxisChange(Number(e.target.value))}
-            style={{
-              width: '100%',
-              height: '8px',
-              background: colorMode === 'hsl'
-                ? `linear-gradient(to right, hsl(${hslColor.h}, ${hslColor.s}%, 0%), hsl(${hslColor.h}, ${hslColor.s}%, 50%), hsl(${hslColor.h}, ${hslColor.s}%, 100%))`
-                : `linear-gradient(to right, black, ${colord({h: hsvColor.h, s: hsvColor.s, v: 100}).toHex()})`,
-              borderRadius: '4px',
-              outline: 'none',
-              appearance: 'none',
-              WebkitAppearance: 'none'
-            }}
-          />
-        )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <input
+          type="range"
+          min="0"
+          max="360"
+          value={currentColor.h}
+          onChange={(e) => onHueChange(Number(e.target.value))}
+          style={{
+            width: '100%',
+            height: '8px',
+            background: 'linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)',
+            borderRadius: '4px',
+            outline: 'none',
+            appearance: 'none',
+            WebkitAppearance: 'none'
+          }}
+        />
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={currentColor.s}
+          onChange={(e) => onSaturationChange(Number(e.target.value))}
+          style={{
+            width: '100%',
+            height: '8px',
+            background: colorMode === 'hsl' 
+              ? `linear-gradient(to right, hsl(${hslColor.h}, 0%, 50%), hsl(${hslColor.h}, 100%, 50%))`
+              : `linear-gradient(to right, white, ${colord({h: hsvColor.h, s: 100, v: hsvColor.v}).toHex()})`,
+            borderRadius: '4px',
+            outline: 'none',
+            appearance: 'none',
+            WebkitAppearance: 'none'
+          }}
+        />
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={colorMode === 'hsl' ? hslColor.l : hsvColor.v}
+          onChange={(e) => onThirdAxisChange(Number(e.target.value))}
+          style={{
+            width: '100%',
+            height: '8px',
+            background: colorMode === 'hsl'
+              ? `linear-gradient(to right, hsl(${hslColor.h}, ${hslColor.s}%, 0%), hsl(${hslColor.h}, ${hslColor.s}%, 50%), hsl(${hslColor.h}, ${hslColor.s}%, 100%))`
+              : `linear-gradient(to right, black, ${colord({h: hsvColor.h, s: hsvColor.s, v: 100}).toHex()})`,
+            borderRadius: '4px',
+            outline: 'none',
+            appearance: 'none',
+            WebkitAppearance: 'none'
+          }}
+        />
       </div>
     </div>
   );
