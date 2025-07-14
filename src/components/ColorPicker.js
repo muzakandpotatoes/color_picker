@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import CustomColorPicker from './CustomColorPicker';
-import { Button, TextField, Paper, Typography, Container, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Divider } from '@mui/material';
+import { Button, TextField, Paper, Typography, Container, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from '@mui/material';
 import { colord } from "colord";
 
 const ColorPicker = () => {
-  const [color, setColor] = useState('#ffffff');
-  const [slider, setSlider] = useState('h');
+  const [color, setColor] = useState('#40bfbf');
   const [colorMode, setColorMode] = useState('hsl');
 
   const handleChangeComplete = (color) => {
@@ -25,50 +24,15 @@ const ColorPicker = () => {
         <Typography variant="h4" gutterBottom align="center" style={{ color: '#333', fontWeight: 600, marginBottom: '1.5rem' }}>
           Color Picker
         </Typography>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '1.5rem',
-          marginBottom: '1.5rem'
-        }}>
-          <div>
-            <CustomColorPicker color={color} onChange={handleChangeComplete} slider={slider} colorMode={colorMode} />
-          </div>
-          <div>
-            <div style={{ 
-              width: '100%', 
-              height: '200px', 
-              backgroundColor: color, 
-              border: '1px solid #ddd', 
-              borderRadius: '8px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              minWidth: '200px'
-            }} />
-          </div>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <CustomColorPicker color={color} onChange={handleChangeComplete} colorMode={colorMode} />
         </div>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
           <FormControl component="fieldset" style={{ marginTop: '1rem' }}>
             <FormLabel component="legend" style={{ color: '#555', fontWeight: 500 }}>Color Mode</FormLabel>
-            <RadioGroup row aria-label="color-mode" name="color-mode" value={colorMode} onChange={(e) => {
-              const newMode = e.target.value;
-              setColorMode(newMode);
-              if (slider === 'l' && newMode === 'hsv') {
-                setSlider('v');
-              } else if (slider === 'v' && newMode === 'hsl') {
-                setSlider('l');
-              }
-            }}>
+            <RadioGroup row aria-label="color-mode" name="color-mode" value={colorMode} onChange={(e) => setColorMode(e.target.value)}>
               <FormControlLabel value="hsl" control={<Radio />} label="HSL" />
               <FormControlLabel value="hsv" control={<Radio />} label="HSV" />
-            </RadioGroup>
-          </FormControl>
-          <Divider orientation="vertical" flexItem style={{ margin: '1rem 0' }} />
-          <FormControl component="fieldset" style={{ marginTop: '1rem' }}>
-            <FormLabel component="legend" style={{ color: '#555', fontWeight: 500 }}>Slider Control</FormLabel>
-            <RadioGroup row aria-label="slider-control" name="slider-control" value={slider} onChange={(e) => setSlider(e.target.value)}>
-              <FormControlLabel value="h" control={<Radio />} label="Hue" />
-              <FormControlLabel value="s" control={<Radio />} label="Saturation" />
-              <FormControlLabel value={colorMode === 'hsl' ? 'l' : 'v'} control={<Radio />} label={colorMode === 'hsl' ? 'Lightness' : 'Value'} />
             </RadioGroup>
           </FormControl>
         </div>
